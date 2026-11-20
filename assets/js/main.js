@@ -143,20 +143,100 @@ function addToCart(item) {
   if (same) same.qty = (same.qty || 1) + 1; else c.push({ ...item, qty: 1 });
   setCart(c);
 }
-function cartTotals() {
-  const c = getCart();
-  const pieces = cartCount();
+function cartTotals(items) {
+  const c = items || getCart();
+  const pieces = c.reduce((n, x) => n + (x.qty || 1), 0);
   const sub = c.reduce((t, x) => { const p = PRODUCTS.find((y) => y.id === x.id); return t + (p ? p.price * (x.qty || 1) : 0); }, 0);
   const rate = pieces >= 3 ? 0.2 : pieces === 2 ? 0.15 : 0;
   const disc = Math.round(sub * rate);
   return { pieces, sub, rate, disc, total: sub - disc, label: pieces >= 3 ? 'Offre TRIO -20%' : pieces === 2 ? 'Offre DUO -15%' : '' };
 }
-function cartMessage() {
-  const t = cartTotals();
-  const lines = getCart().map((x) => { const p = PRODUCTS.find((y) => y.id === x.id); return p ? `• ${p.name} — ${C[x.color] ? C[x.color][0] : ''}, taille ${x.size} × ${x.qty} = ${p.price * x.qty} DH` : ''; }).filter(Boolean);
-  return `Bonjour HAYATI Paris, je souhaite commander :\n${lines.join('\n')}\n\nSous-total : ${t.sub} DH` +
-    (t.disc ? `\n${t.label} : -${t.disc} DH` : '') + `\nTotal : ${t.total} DH\n\nNom :\nVille / adresse de livraison :\n\nMerci !`;
+/* ---------- Commande : formulaire paiement à la livraison (COD) ---------- */
+const CITIES = ['Oujda', 'Casablanca', 'Rabat', 'Salé', 'Témara', 'Kénitra', 'Fès', 'Meknès', 'Marrakech', 'Agadir', 'Tanger', 'Tétouan', 'Al Hoceïma', 'Nador', 'Berkane', 'Taourirt', 'Saïdia', 'Guercif', 'Taza', 'El Jadida', 'Safi', 'Essaouira', 'Béni Mellal', 'Khouribga', 'Settat', 'Mohammedia', 'Larache', 'Ouarzazate', 'Errachidia', 'Laâyoune', 'Dakhla'];
+let CHECKOUT_ITEMS = [];
+
+function orderLines(items) {
+  return items.map((x) => { const p = PRODUCTS.find((y) => y.id === x.id); return p ? `• ${p.name} — ${C[x.color] ? C[x.color][0] : ''}, taille ${x.size} × ${x.qty || 1} = ${p.price * (x.qty || 1)} DH` : ''; }).filter(Boolean);
 }
+
+function renderCheckoutModal() {
+  if (document.getElementById('checkout')) return;
+  const saved = store.get('hayati-client', {});
+  const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  document.body.insertAdjacentHTML('beforeend', `
+  <div class="drawer modal" id="checkout" aria-hidden="true">
+    <div class="drawer-bg" data-close-checkout></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="co-title">
+      <div class="cart-head"><h2 id="co-title">Finaliser ma commande</h2><button class="icon-btn" type="button" aria-label="Fermer" data-close-checkout>${icon('close')}</button></div>
+      <form class="co-form" id="co-form" novalidate>
+        <div class="co-recap" id="co-recap"></div>
+        <p class="co-cod">${icon('truck')}<span><b>Paiement à la livraison</b> — vous payez en espèces à la réception, partout au Maroc.</span></p>
+        <div class="field"><label for="co-name">Nom complet *</label><input id="co-name" name="name" autocomplete="name" value="${esc(saved.name)}" required><small class="f-err">Veuillez indiquer votre nom complet.</small></div>
+        <div class="field"><label for="co-phone">Téléphone *</label><input id="co-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" value="${esc(saved.phone)}" required><small class="f-err">Numéro marocain valide requis (ex. 06 12 34 56 78).</small></div>
+        <div class="field-row">
+          <div class="field"><label for="co-city">Ville *</label><input id="co-city" name="city" list="co-cities" autocomplete="address-level2" value="${esc(saved.city)}" required><datalist id="co-cities">${CITIES.map((c) => `<option value="${c}">`).join('')}</datalist><small class="f-err">Veuillez indiquer votre ville.</small></div>
+          <div class="field"><label for="co-qty">Quartier</label><input id="co-qty" name="district" value="${esc(saved.district)}"></div>
+        </div>
+        <div class="field"><label for="co-addr">Adresse de livraison *</label><textarea id="co-addr" name="address" rows="2" autocomplete="street-address" placeholder="Rue, numéro, immeuble, repère…" required>${esc(saved.address)}</textarea><small class="f-err">Veuillez indiquer votre adresse.</small></div>
+        <div class="field"><label for="co-note">Remarque (optionnel)</label><input id="co-note" name="note" placeholder="Horaire préféré, précision…"></div>
+        <button type="submit" class="btn btn-wa btn-block">${icon('wa')}Envoyer ma commande sur WhatsApp</button>
+        <p class="co-legal">Votre commande est confirmée par notre équipe sur WhatsApp avant l’expédition.</p>
+      </form>
+    </div>
+  </div>`);
+  document.querySelectorAll('[data-close-checkout]').forEach((b) => b.addEventListener('click', () => openCheckout(false)));
+  const form = document.getElementById('co-form');
+  form.addEventListener('input', (e) => { const f = e.target.closest('.field'); if (f) f.classList.remove('invalid'); });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(form).entries());
+    Object.keys(d).forEach((k) => { d[k] = String(d[k]).trim(); });
+    const phone = d.phone.replace(/[\s.\-()]/g, '');
+    const checks = {
+      name: d.name.length >= 3,
+      phone: /^(?:\+212|00212|0)[5-7]\d{8}$/.test(phone),
+      city: d.city.length >= 2,
+      address: d.address.length >= 5
+    };
+    let first = null;
+    Object.entries(checks).forEach(([k, ok]) => {
+      const f = form.querySelector(`[name="${k}"]`).closest('.field');
+      f.classList.toggle('invalid', !ok);
+      if (!ok && !first) first = form.querySelector(`[name="${k}"]`);
+    });
+    if (first) { first.focus(); return; }
+    store.set('hayati-client', { name: d.name, phone: d.phone, city: d.city, district: d.district, address: d.address });
+    const t = cartTotals(CHECKOUT_ITEMS);
+    const msg = `Bonjour HAYATI Paris, je souhaite passer commande :\n\n${orderLines(CHECKOUT_ITEMS).join('\n')}\n\n` +
+      `Sous-total : ${t.sub} DH` + (t.disc ? `\n${t.label} : -${t.disc} DH` : '') + `\nTOTAL : ${t.total} DH\n` +
+      `Paiement : à la livraison (COD)\n\n` +
+      `— Informations de livraison —\nNom : ${d.name}\nTéléphone : ${d.phone}\nVille : ${d.city}` + (d.district ? `\nQuartier : ${d.district}` : '') +
+      `\nAdresse : ${d.address}` + (d.note ? `\nRemarque : ${d.note}` : '') + `\n\nMerci !`;
+    openWA(msg);
+    openCheckout(false);
+    toast('Commande prête : envoyez le message sur WhatsApp');
+  });
+}
+
+function openCheckout(o = true, items) {
+  renderCheckoutModal();
+  const m = document.getElementById('checkout');
+  if (o) {
+    CHECKOUT_ITEMS = (items || []).map((x) => ({ ...x, qty: x.qty || 1 }));
+    const t = cartTotals(CHECKOUT_ITEMS);
+    document.getElementById('co-recap').innerHTML = CHECKOUT_ITEMS.map((x) => {
+      const p = PRODUCTS.find((y) => y.id === x.id); if (!p) return '';
+      return `<div class="co-item"><span class="co-img">${img(p.id, '')}</span><span class="co-txt"><b>${p.name}</b><small>${C[x.color] ? C[x.color][0] : ''} · Taille ${x.size} · Qté ${x.qty}</small></span><span class="co-p">${p.price * x.qty} DH</span></div>`;
+    }).join('') + (t.disc ? `<div class="sum-row disc"><span>${t.label}</span><span>-${t.disc} DH</span></div>` : '') +
+      `<div class="sum-row total"><span>Total à payer à la livraison</span><span>${t.total} DH</span></div>`;
+    openCart(false);
+  }
+  m.classList.toggle('open', o);
+  m.setAttribute('aria-hidden', !o);
+  document.documentElement.style.overflow = o ? 'hidden' : '';
+  if (o) setTimeout(() => { const f = document.querySelector('#co-form input:placeholder-shown, #co-name'); const empty = [...document.querySelectorAll('#co-form [required]')].find((i) => !i.value); (empty || f).focus({ preventScroll: true }); }, 350);
+}
+
 function renderCart() {
   const body = document.getElementById('cart-body');
   if (!body) return;
@@ -269,8 +349,8 @@ function renderHeader(active) {
   </div>`);
   document.querySelectorAll('[data-open-cart]').forEach((b) => b.addEventListener('click', () => openCart(true)));
   document.querySelectorAll('[data-close-cart]').forEach((b) => b.addEventListener('click', () => openCart(false)));
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') openCart(false); });
-  document.querySelector('[data-cart-wa]').addEventListener('click', () => openWA(cartMessage()));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { openCart(false); if (document.getElementById('checkout')) openCheckout(false); } });
+  document.querySelector('[data-cart-wa]').addEventListener('click', () => openCheckout(true, getCart()));
   document.getElementById('cart-body').addEventListener('click', (e) => {
     const c = getCart();
     const q = e.target.closest('[data-q]'); const rm = e.target.closest('[data-rm]');
@@ -525,7 +605,7 @@ function pageProduct() {
   document.querySelectorAll('[data-wa]').forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
     if (needSize()) return;
-    openWA(`Bonjour HAYATI Paris, je souhaite commander :\n• ${p.name}\n• Couleur : ${C[color][0]}\n• Taille : ${size}\n• Prix : ${p.price} DH\n\nNom :\nVille / adresse de livraison :\n\nMerci !`);
+    openCheckout(true, [{ id: p.id, color, size, qty: 1 }]);
   }));
 
   // suggestions
