@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collection — HAYATI Paris</title>
+  <meta name="theme-color" content="#F5EFE6">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234A3428'/%3E%3Ctext x='32' y='44' font-family='Georgia' font-size='36' fill='%23F5EFE6' text-anchor='middle'%3EH%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="collection">
+  <div id="site-header"></div>
+
+  <main>
+    <section class="banner">
+      <div class="wrap">
+        <div class="banner-txt">
+          <nav class="crumbs" aria-label="Fil d’Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><span id="cat-crumb">Nouveautés</span></nav>
+          <h1 id="cat-title">Nouveautés</h1>
+          <p class="lead">Ensembles fluides, robes longues et vestes de caractère : nos pièces au chic parisien, choisies pour vous.</p>
+        </div>
+        <div class="banner-arches" aria-hidden="true">
+          <span><img class="cover" src="images/produits/blouse-satin-creme.jpg" data-fallback="images/illustrations/blouse-satin-creme.svg" alt=""></span>
+          <span><img class="cover" src="images/produits/ensemble-maille-chocolat.jpg" data-fallback="images/illustrations/ensemble-maille-chocolat.svg" alt=""></span>
+          <span><img class="cover" src="images/produits/blazer-bordeaux.jpg" data-fallback="images/illustrations/blazer-bordeaux.svg" alt=""></span>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap shop">
+      <div class="cat-tabs" id="cat-tabs"></div>
+
+      <aside class="filters" id="filters" aria-label="Filtres">
+        <div class="f-head">
+          <b><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrer</b>
+          <button type="button" data-reset>Réinitialiser</button>
+        </div>
+        <div class="f-group"><p class="f-title">Catégorie</p><div id="f-cats" style="display:flex;flex-direction:column;gap:14px"></div></div>
+        <div class="f-group"><p class="f-title">Taille</p><div class="sizes" id="f-sizes"></div></div>
+        <div class="f-group"><p class="f-title">Couleur</p><div class="swatches" id="f-colors"></div></div>
+        <div class="f-group">
+          <p class="f-title">Prix maximum</p>
+          <label class="sr-only" for="f-price">Prix maximum</label>
+          <input class="range" id="f-price" type="range" min="299" max="600" step="10" value="600">
+          <div class="range-vals"><span>299 DH</span><span id="f-price-val">600 DH</span></div>
+        </div>
+        <div class="f-group">
+          <p class="f-title">Offres</p>
+          <label class="check"><input type="checkbox" checked disabled>Éligible DUO -15%</label>
+          <label class="check"><input type="checkbox" checked disabled>Éligible TRIO -20%</label>
+        </div>
+        <button type="button" class="btn btn-dark btn-block f-apply" style="display:none" data-close-filters>Voir <span data-count>0 pièces</span></button>
+      </aside>
+      <div class="scrim" id="scrim" data-close-filters></div>
+
+      <div class="results">
+        <div class="toolbar">
+          <button type="button" class="f-open" data-open-filters><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrer</button>
+          <span class="hide-m" data-count>0 pièces</span>
+          <label>Trier par
+            <select id="sort">
+              <option value="new">Nouveautés</option>
+              <option value="asc">Prix croissant</option>
+              <option value="desc">Prix décroissant</option>
+            </select>
+          </label>
+        </div>
+        <span class="count" data-count>0 pièces</span>
+        <div class="chips" id="chips"></div>
+        <div class="grid g3" id="grid"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
