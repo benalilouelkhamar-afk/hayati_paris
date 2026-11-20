@@ -413,7 +413,7 @@ p { margin: 0; }
   .hero { grid-template-columns: 1fr; padding-top: 24px; padding-bottom: 48px; gap: 28px; }
   .hero-visual { order: -1; padding: 0; }
   .hero-img { width: 100%; max-width: none; height: 460px; margin: 0; border-radius: 999px 999px 0 0; }
-  .hero-card { left: 12px; bottom: 16px; padding: 10px 16px 10px 10px; }
+  .hero-card { display: none; }
   .vertical { display: none; }
   .hero-text { padding-left: 0; gap: 20px; }
   .hero h1 { font-size: 54px; }
