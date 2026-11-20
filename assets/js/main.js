@@ -1,7 +1,8 @@
 /* HAYATI Paris — front-end (maquette fonctionnelle, sans backend) */
 
-// Numéro WhatsApp de la boutique (format international, sans + ni espaces) — À REMPLACER
-const WHATSAPP = '212600000000';
+// Numéro WhatsApp de la boutique (format international, sans + ni espaces, ex. '212612345678')
+// Tant qu'il est vide, WhatsApp s'ouvre et laisse choisir le contact.
+const WHATSAPP = '';
 
 const C = {
   taupe: ['Taupe', '#A99686'], noir: ['Noir', '#1A1A1A'], beige: ['Beige', '#E4D3BD'],
@@ -127,9 +128,78 @@ const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const cartCount = () => store.get('hayati-cart', []).length;
-function updateCart() { document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = cartCount(); }); }
-function addToCart(item) { const c = store.get('hayati-cart', []); c.push(item); store.set('hayati-cart', c); updateCart(); }
+// Panier : [{ id, color, size, qty }]
+let CART_MEM = null;
+const getCart = () => { const c = store.get('hayati-cart', CART_MEM || []); return Array.isArray(c) ? c.filter((x) => x && x.id).map((x) => ({ ...x, qty: x.qty || 1 })) : []; };
+const setCart = (c) => { CART_MEM = c; store.set('hayati-cart', c); updateCart(); renderCart(); };
+const cartCount = () => getCart().reduce((n, x) => n + (x.qty || 1), 0);
+function updateCart() {
+  const n = cartCount();
+  document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = n; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); });
+}
+function addToCart(item) {
+  const c = getCart();
+  const same = c.find((x) => x.id === item.id && x.color === item.color && x.size === item.size);
+  if (same) same.qty = (same.qty || 1) + 1; else c.push({ ...item, qty: 1 });
+  setCart(c);
+}
+function cartTotals() {
+  const c = getCart();
+  const pieces = cartCount();
+  const sub = c.reduce((t, x) => { const p = PRODUCTS.find((y) => y.id === x.id); return t + (p ? p.price * (x.qty || 1) : 0); }, 0);
+  const rate = pieces >= 3 ? 0.2 : pieces === 2 ? 0.15 : 0;
+  const disc = Math.round(sub * rate);
+  return { pieces, sub, rate, disc, total: sub - disc, label: pieces >= 3 ? 'Offre TRIO -20%' : pieces === 2 ? 'Offre DUO -15%' : '' };
+}
+function cartMessage() {
+  const t = cartTotals();
+  const lines = getCart().map((x) => { const p = PRODUCTS.find((y) => y.id === x.id); return p ? `• ${p.name} — ${C[x.color] ? C[x.color][0] : ''}, taille ${x.size} × ${x.qty} = ${p.price * x.qty} DH` : ''; }).filter(Boolean);
+  return `Bonjour HAYATI Paris, je souhaite commander :\n${lines.join('\n')}\n\nSous-total : ${t.sub} DH` +
+    (t.disc ? `\n${t.label} : -${t.disc} DH` : '') + `\nTotal : ${t.total} DH\n\nNom :\nVille / adresse de livraison :\n\nMerci !`;
+}
+function renderCart() {
+  const body = document.getElementById('cart-body');
+  if (!body) return;
+  const c = getCart();
+  const t = cartTotals();
+  document.getElementById('cart-title-n').textContent = t.pieces ? `(${t.pieces})` : '';
+  if (!c.length) {
+    body.innerHTML = `<div class="cart-empty">${icon('bag')}<p>Votre panier est vide.</p><a class="btn btn-dark" href="collection.html?cat=nouveautes">Découvrir la collection</a></div>`;
+    document.getElementById('cart-foot').hidden = true;
+    return;
+  }
+  document.getElementById('cart-foot').hidden = false;
+  body.innerHTML = c.map((x, i) => {
+    const p = PRODUCTS.find((y) => y.id === x.id); if (!p) return '';
+    return `<div class="cart-item">
+      <a class="ci-img" href="produit.html?id=${p.id}">${img(p.id, p.name)}</a>
+      <div class="ci-info">
+        <a class="ci-name" href="produit.html?id=${p.id}">${p.name}</a>
+        <span class="ci-meta">${C[x.color] ? C[x.color][0] : ''} · Taille ${x.size}</span>
+        <div class="ci-row">
+          <div class="qty"><button type="button" data-q="${i}" data-d="-1" aria-label="Diminuer">−</button><span>${x.qty}</span><button type="button" data-q="${i}" data-d="1" aria-label="Augmenter">+</button></div>
+          <span class="ci-price">${p.price * x.qty} DH</span>
+        </div>
+        <button type="button" class="ci-remove" data-rm="${i}">Retirer</button>
+      </div>
+    </div>`;
+  }).join('');
+  const hint = t.pieces === 1 ? 'Ajoutez 1 pièce pour profiter de -15% (DUO)' : t.pieces === 2 ? 'Ajoutez 1 pièce pour profiter de -20% (TRIO)' : 'Offre TRIO -20% appliquée';
+  document.getElementById('cart-sum').innerHTML = `
+    <p class="cart-hint">${icon('tag')}${hint}</p>
+    <div class="sum-row"><span>Sous-total</span><span>${t.sub} DH</span></div>
+    ${t.disc ? `<div class="sum-row disc"><span>${t.label}</span><span>-${t.disc} DH</span></div>` : ''}
+    <div class="sum-row"><span>Livraison</span><span>Partout au Maroc</span></div>
+    <div class="sum-row total"><span>Total</span><span>${t.total} DH</span></div>`;
+}
+function openCart(o = true) {
+  const d = document.getElementById('cart');
+  if (!d) return;
+  if (o) renderCart();
+  d.classList.toggle('open', o);
+  d.setAttribute('aria-hidden', !o);
+  document.documentElement.style.overflow = o ? 'hidden' : '';
+}
 
 function toast(msg) {
   let t = document.querySelector('.toast');
@@ -140,6 +210,7 @@ function toast(msg) {
 }
 
 const waLink = (text) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
+const openWA = (text) => { const w = window.open(waLink(text), '_blank'); if (w) { try { w.opener = null; } catch (e) {} } else { location.href = waLink(text); } };
 
 /* ---------- Header & footer communs ---------- */
 function renderHeader(active) {
@@ -166,7 +237,7 @@ function renderHeader(active) {
         <div class="header-icons">
           <a class="icon-btn hide-m" href="#" aria-label="Mon compte">${icon('user')}</a>
           <a class="icon-btn" href="#" aria-label="Favoris">${icon('heart')}</a>
-          <a class="icon-btn" href="#" aria-label="Panier">${icon('bag')}<span class="cart-count" data-cart-count>0</span></a>
+          <button class="icon-btn" type="button" aria-label="Ouvrir le panier" data-open-cart>${icon('bag')}<span class="cart-count" data-cart-count>0</span></button>
         </div>
       </div>
       <nav class="nav" aria-label="Menu principal">${nav}</nav>
@@ -183,6 +254,29 @@ function renderHeader(active) {
       <a class="btn btn-wa" style="margin-top:24px" href="${waLink('Bonjour HAYATI Paris, j’aimerais avoir des informations.')}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>
     </div>
   </div>`;
+  document.body.insertAdjacentHTML('beforeend', `
+  <div class="drawer cart-drawer" id="cart" aria-hidden="true">
+    <div class="drawer-bg" data-close-cart></div>
+    <aside class="cart-panel" role="dialog" aria-label="Panier">
+      <div class="cart-head"><h2>Mon panier <span id="cart-title-n"></span></h2><button class="icon-btn" type="button" aria-label="Fermer le panier" data-close-cart>${icon('close')}</button></div>
+      <div class="cart-body" id="cart-body"></div>
+      <div class="cart-foot" id="cart-foot" hidden>
+        <div id="cart-sum"></div>
+        <button type="button" class="btn btn-wa btn-block" data-cart-wa>${icon('wa')}Commander sur WhatsApp</button>
+        <button type="button" class="btn btn-line btn-block" data-close-cart>Continuer mes achats</button>
+      </div>
+    </aside>
+  </div>`);
+  document.querySelectorAll('[data-open-cart]').forEach((b) => b.addEventListener('click', () => openCart(true)));
+  document.querySelectorAll('[data-close-cart]').forEach((b) => b.addEventListener('click', () => openCart(false)));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') openCart(false); });
+  document.querySelector('[data-cart-wa]').addEventListener('click', () => openWA(cartMessage()));
+  document.getElementById('cart-body').addEventListener('click', (e) => {
+    const c = getCart();
+    const q = e.target.closest('[data-q]'); const rm = e.target.closest('[data-rm]');
+    if (q) { const it = c[+q.dataset.q]; it.qty = Math.max(1, Math.min(9, it.qty + +q.dataset.d)); setCart(c); }
+    if (rm) { c.splice(+rm.dataset.rm, 1); setCart(c); }
+  });
   const drawer = document.getElementById('drawer');
   document.querySelectorAll('[data-open-menu]').forEach((b) => b.addEventListener('click', () => { drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); }));
   document.querySelectorAll('[data-close-menu]').forEach((b) => b.addEventListener('click', () => { drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); }));
@@ -412,14 +506,26 @@ function pageProduct() {
   sz.addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (b && !b.disabled) { size = b.dataset.s; drawSize(); } });
   drawSize();
 
-  const needSize = () => { if (!size) { toast('Choisissez votre taille'); sz.scrollIntoView({ behavior: 'smooth', block: 'center' }); return true; } return false; };
+  const err = document.getElementById('p-size-err');
+  const needSize = () => {
+    if (size) return false;
+    err.hidden = false;
+    sz.classList.remove('shake'); void sz.offsetWidth; sz.classList.add('shake');
+    toast('Choisissez d’abord votre taille');
+    sz.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return true;
+  };
+  sz.addEventListener('click', () => { if (size) { err.hidden = true; sz.classList.remove('shake'); } });
   document.querySelectorAll('[data-add]').forEach((b) => b.addEventListener('click', () => {
     if (needSize()) return;
-    addToCart({ id: p.id, color, size }); toast(`${p.name} ajouté au panier`);
+    addToCart({ id: p.id, color, size });
+    toast(`${p.name} ajouté au panier`);
+    setTimeout(() => openCart(true), 350);
   }));
   document.querySelectorAll('[data-wa]').forEach((a) => a.addEventListener('click', (e) => {
-    if (needSize()) { e.preventDefault(); return; }
-    a.href = waLink(`Bonjour HAYATI Paris, je souhaite commander :\n• ${p.name}\n• Couleur : ${C[color][0]}\n• Taille : ${size}\n• Prix : ${p.price} DH\n\nMerci !`);
+    e.preventDefault();
+    if (needSize()) return;
+    openWA(`Bonjour HAYATI Paris, je souhaite commander :\n• ${p.name}\n• Couleur : ${C[color][0]}\n• Taille : ${size}\n• Prix : ${p.price} DH\n\nNom :\nVille / adresse de livraison :\n\nMerci !`);
   }));
 
   // suggestions
@@ -438,6 +544,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (page === 'home') pageHome();
   if (page === 'collection') pageCollection();
   if (page === 'product') pageProduct();
-  updateCart(); bindFavs(); reveal(); fixBroken();
+  updateCart(); renderCart(); bindFavs(); reveal(); fixBroken();
 });
 window.addEventListener('load', fixBroken);
