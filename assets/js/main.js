@@ -7,7 +7,8 @@ const C = {
   taupe: ['Taupe', '#A99686'], noir: ['Noir', '#1A1A1A'], beige: ['Beige', '#E4D3BD'],
   creme: ['Crème', '#F4EDDE'], marine: ['Marine', '#1F2D55'], chocolat: ['Chocolat', '#4A3428'],
   kaki: ['Kaki', '#7E8160'], blanc: ['Blanc cassé', '#F7F3EC'], bordeaux: ['Bordeaux', '#6A1F2C'],
-  ciel: ['Bleu ciel', '#BFD0E2'], leopard: ['Léopard', '#B98A57']
+  ciel: ['Bleu ciel', '#9DB9DA'], leopard: ['Léopard', '#9A6B3E'], rose: ['Rose', '#F2B8CB'],
+  mauve: ['Mauve', '#8E5A6E'], jaune: ['Jaune', '#E9B44C'], gris: ['Gris', '#9C978F']
 };
 
 const CATEGORIES = {
@@ -15,27 +16,62 @@ const CATEGORIES = {
 };
 
 const PRODUCTS = [
-  { id: 'ensemble-mandarin', name: 'Ensemble Mandarin taupe', cat: 'ensembles', price: 549, isNew: true, badge: 'Nouveau', colors: ['taupe', 'noir', 'beige'],
-    desc: 'Ensemble deux pièces au col mandarin, fermé par de délicats boutons brandebourg. Veste ample aux manches larges et pantalon fluide : une silhouette pudique et moderne, de jour comme de soir.',
-    extra: ['images/illustrations/ensemble-mandarin-detail.svg', 'images/illustrations/ensemble-mandarin-dos.svg'] },
-  { id: 'ensemble-raye', name: 'Ensemble rayé chemise + pantalon', cat: 'ensembles', price: 489, isNew: true, badge: 'Best-seller', colors: ['marine', 'chocolat'],
-    desc: 'Chemise fluide et pantalon large à rayures graphiques marine sur fond crème. Un ensemble assorti, facile et élégant, pour un look parisien sans effort.' },
-  { id: 'robe-maille-blanche', name: 'Robe maille blanche boutons dorés', cat: 'robes', price: 449, isNew: true, badge: 'Nouveau', colors: ['blanc', 'noir'],
-    desc: 'Robe longue en maille côtelée, boutonnage doré sur toute la longueur et bas légèrement évasé. Une pièce raffinée et confortable.' },
-  { id: 'ensemble-kimono', name: 'Ensemble kimono satin kaki', cat: 'ensembles', price: 599, isNew: true, badge: '', colors: ['kaki', 'beige'],
-    desc: 'Veste kimono croisée en satin jacquard, nouée sur le côté, et pantalon large assorti. Fluide, lumineux et délicatement pudique.' },
-  { id: 'robe-longue-beige', name: 'Robe longue beige', cat: 'robes', price: 429, isNew: true, badge: '', colors: ['beige', 'taupe'],
-    desc: 'Robe longue au col chemise, plis froncés et boutons dorés. Coupe ample et tombé fluide pour une élégance au quotidien.' },
-  { id: 'robe-noire-brodee', name: 'Robe noire brodée', cat: 'robes', price: 559, isNew: true, badge: 'Édition limitée', colors: ['noir'],
-    desc: 'Robe longue noire ornée de fleurs brodées en relief, avec un bas en voile. Une pièce d’exception pour vos soirées.' },
-  { id: 'chemise-rayee-creme', name: 'Chemise rayée crème', cat: 'chemises', price: 299, isNew: false, badge: '', colors: ['creme', 'ciel'],
-    desc: 'Chemise à fines rayures, taille marquée par des plis et manches bouffantes. Se porte avec un pantalon large ou une jupe longue.' },
-  { id: 'blazer-noir', name: 'Blazer noir', cat: 'blazers', price: 499, isNew: true, badge: '', colors: ['noir', 'beige', 'bordeaux'],
-    desc: 'Blazer coupe droite, revers crantés et deux boutons. L’indispensable qui structure toutes vos tenues.' },
-  { id: 'veste-leopard', name: 'Veste léopard', cat: 'blazers', price: 529, isNew: true, badge: 'Nouveau', colors: ['leopard'],
-    desc: 'Veste courte effet fourrure à motif léopard, col chemise et boutons pression. La touche audacieuse de la saison.' },
-  { id: 'ensemble-bordeaux', name: 'Ensemble bordeaux jupe plissée', cat: 'ensembles', price: 579, isNew: false, badge: '', colors: ['bordeaux', 'chocolat'],
-    desc: 'Cardigan en maille texturée aux boutons dorés et jupe longue plissée assortie. Un ensemble chic et enveloppant.' }
+  { id: "ensemble-mandarin", name: "Ensemble Mandarin taupe", cat: "ensembles", price: 549, isNew: true, badge: "Nouveau", colors: ["taupe", "noir", "beige"],
+    desc: "Ensemble deux pièces au col mandarin, fermé par de délicats boutons brandebourg. Veste ample aux manches larges et pantalon fluide : une silhouette pudique et moderne, de jour comme de soir." },
+  { id: "ensemble-raye", name: "Ensemble rayé chemise + pantalon", cat: "ensembles", price: 489, isNew: true, badge: "Best-seller", colors: ["marine", "creme"],
+    desc: "Chemise fluide et pantalon large à bandes graphiques marine sur fond crème. Un ensemble assorti, facile et élégant, pour un look parisien sans effort." },
+  { id: "robe-maille-blanche", name: "Robe maille blanche boutons dorés", cat: "robes", price: 449, isNew: true, badge: "Nouveau", colors: ["blanc", "noir"],
+    desc: "Robe longue en maille côtelée, boutonnage doré sur toute la longueur et bas légèrement évasé. Une pièce raffinée et confortable." },
+  { id: "ensemble-kimono", name: "Ensemble kimono satin kaki", cat: "ensembles", price: 599, isNew: true, badge: "", colors: ["kaki", "beige"],
+    desc: "Veste kimono croisée en satin jacquard, nouée sur le côté, et pantalon large assorti. Fluide, lumineux et délicatement pudique." },
+  { id: "robe-longue-beige", name: "Robe longue beige boutons dorés", cat: "robes", price: 429, isNew: true, badge: "", colors: ["beige", "taupe"],
+    desc: "Robe longue au col chemise, épaules froncées et boutons dorés. Coupe ample et tombé fluide pour une élégance au quotidien." },
+  { id: "robe-noire-brodee", name: "Robe noire brodée", cat: "robes", price: 559, isNew: true, badge: "Édition limitée", colors: ["noir"],
+    desc: "Robe longue noire ornée de fleurs brodées en relief, avec un bas en voile. Une pièce d’exception pour vos soirées." },
+  { id: "blazer-noir", name: "Blazer noir", cat: "blazers", price: 499, isNew: true, badge: "", colors: ["noir"],
+    desc: "Blazer coupe droite, revers crantés et deux boutons. L’indispensable qui structure toutes vos tenues." },
+  { id: "veste-leopard", name: "Veste léopard", cat: "blazers", price: 529, isNew: true, badge: "Nouveau", colors: ["leopard"],
+    desc: "Veste courte effet fourrure à motif léopard, col chemise et boutons pression. La touche audacieuse de la saison." },
+  { id: "ensemble-bordeaux", name: "Ensemble bordeaux jupe plissée", cat: "ensembles", price: 579, isNew: true, badge: "Nouveau", colors: ["bordeaux"],
+    desc: "Cardigan en maille texturée aux boutons dorés et jupe longue plissée assortie. Un ensemble chic et enveloppant." },
+  { id: "robe-longue-plissee-beige", name: "Robe longue plissée col chemise", cat: "robes", price: 469, isNew: true, badge: "", colors: ["beige"],
+    desc: "Robe longue à plis couchés, col chemise et boutons dorés. Une ligne pure et pudique, d’une grande douceur." },
+  { id: "ensemble-satin-creme", name: "Ensemble satin crème", cat: "ensembles", price: 529, isNew: true, badge: "", colors: ["creme"],
+    desc: "Blouse en satin drapée au col montant, manches bouffantes et pantalon assorti. Une allure lumineuse et sophistiquée." },
+  { id: "chemise-rayee-creme", name: "Chemise rayée crème", cat: "chemises", price: 299, isNew: false, badge: "", colors: ["creme"],
+    desc: "Chemise à fines rayures, taille marquée par des plis et manches amples. Se porte avec un pantalon large ou une jupe longue." },
+  { id: "ensemble-satin-mauve", name: "Ensemble satin mauve", cat: "ensembles", price: 519, isNew: false, badge: "", colors: ["mauve"],
+    desc: "Chemise et jupe longue évasée en satin mauve, à accessoiriser d’un foulard noué à la taille." },
+  { id: "robe-fleurie-jaune", name: "Robe fleurie aquarelle", cat: "robes", price: 469, isNew: false, badge: "", colors: ["creme", "jaune"],
+    desc: "Robe longue fluide à grandes fleurs effet aquarelle et manches évasées. Douce, lumineuse et pudique." },
+  { id: "robe-noire-drapee", name: "Robe satin noire drapée", cat: "robes", price: 579, isNew: false, badge: "", colors: ["noir"],
+    desc: "Robe longue en satin, col chemise et drapé noué à la taille. Une élégance intemporelle." },
+  { id: "robe-maille-taupe", name: "Robe maille côtelée taupe", cat: "robes", price: 459, isNew: false, badge: "", colors: ["taupe"],
+    desc: "Robe longue en maille côtelée, col polo et boutonnage nacré, jupe plissée. Confortable et raffinée." },
+  { id: "robe-mousseline-bordeaux", name: "Robe mousseline bordeaux", cat: "robes", price: 399, isNew: false, badge: "", colors: ["bordeaux"],
+    desc: "Robe en mousseline au col montant, manches bouffantes et jupe à volants." },
+  { id: "ensemble-rose", name: "Ensemble chemise rayée rose", cat: "ensembles", price: 459, isNew: false, badge: "", colors: ["rose"],
+    desc: "Chemise rayée nouée à la taille, poignets volantés et pantalon large assorti. Frais et féminin." },
+  { id: "ensemble-maille-chocolat", name: "Ensemble maille chocolat", cat: "ensembles", price: 449, isNew: false, badge: "", colors: ["chocolat"],
+    desc: "Polo en maille côtelée aux boutons dorés et jupe à volant assortie." },
+  { id: "ensemble-dentelle-taupe", name: "T-shirt dentelle & pantalon", cat: "ensembles", price: 349, isNew: false, badge: "", colors: ["taupe", "chocolat"],
+    desc: "T-shirt ample finition dentelle et pantalon droit à pinces. Une tenue simple et chic." },
+  { id: "tailleur-beige", name: "Tailleur blazer beige", cat: "blazers", price: 599, isNew: false, badge: "", colors: ["beige"],
+    desc: "Blazer croisé asymétrique et pantalon large assorti. Une silhouette structurée et moderne." },
+  { id: "blazer-bordeaux", name: "Blazer croisé bordeaux", cat: "blazers", price: 549, isNew: false, badge: "", colors: ["bordeaux"],
+    desc: "Blazer croisé oversize, revers crantés et poches à rabat." },
+  { id: "veste-kaki", name: "Veste kaki col contrasté", cat: "blazers", price: 549, isNew: false, badge: "", colors: ["kaki"],
+    desc: "Veste ample en coton, col contrasté, boutons dorés et grandes poches plaquées." },
+  { id: "veste-maille-chocolat", name: "Veste maille chocolat boutons dorés", cat: "blazers", price: 489, isNew: false, badge: "", colors: ["chocolat"],
+    desc: "Veste cintrée en maille structurée, col rond et boutons dorés. Se porte avec le pantalon assorti." },
+  { id: "chemise-lin-bleu", name: "Chemise lin bleu bijoux dorés", cat: "chemises", price: 389, isNew: false, badge: "", colors: ["ciel"],
+    desc: "Chemise en lin chiné ornée de boutons bijoux dorés : soleil, étoile de mer et coquillage." },
+  { id: "chemise-rayee-noire", name: "Chemise rayée noire ceinturée", cat: "chemises", price: 339, isNew: false, badge: "", colors: ["noir"],
+    desc: "Chemise longue à rayures tennis, ceinture à nouer et poignets larges." },
+  { id: "chemise-grise", name: "Chemise grise oversize", cat: "chemises", price: 319, isNew: false, badge: "", colors: ["gris"],
+    desc: "Chemise oversize au col asymétrique et patte boutonnée cachée." },
+  { id: "tshirt-bleu-marine", name: "T-shirt bleu marine", cat: "chemises", price: 299, isNew: false, badge: "", colors: ["marine"],
+    desc: "T-shirt ajusté en coton stretch, col rond. La base parfaite sous un blazer." }
 ];
 
 /* ---------- Images : photo réelle si présente, sinon illustration ---------- */
@@ -227,7 +263,7 @@ function pageHome() {
   if (grid) grid.innerHTML = PRODUCTS.filter((p) => p.isNew).slice(0, 8).map(card).join('');
   const insta = document.getElementById('insta');
   if (insta) {
-    const ids = ['blouse-satin-creme', 'ensemble-maille-chocolat', 'boutique', 'blazer-bordeaux', 'ensemble-bordeaux', 'ensemble-raye'];
+    const ids = ['ensemble-satin-mauve', 'robe-fleurie-jaune', 'tailleur-beige', 'ensemble-rose', 'robe-noire-drapee', 'chemise-lin-bleu'];
     insta.innerHTML = ids.map((id) => `<a href="https://www.instagram.com/hayati_paris/" target="_blank" rel="noopener" aria-label="Voir sur Instagram">${img(id, '')}</a>`).join('');
   }
 }
@@ -258,7 +294,7 @@ function pageCollection() {
   fs.innerHTML = SZ.map((s) => `<button type="button" class="size" data-size="${s}" aria-pressed="false">${s}</button>`).join('');
   fs.addEventListener('click', (e) => { const b = e.target.closest('[data-size]'); if (!b) return; const s = b.dataset.size; state.sizes.has(s) ? state.sizes.delete(s) : state.sizes.add(s); draw(); });
 
-  const COL = ['taupe', 'beige', 'creme', 'noir', 'chocolat', 'kaki', 'bordeaux', 'marine'];
+  const COL = ['beige', 'creme', 'taupe', 'chocolat', 'noir', 'kaki', 'bordeaux', 'marine', 'rose', 'mauve', 'ciel', 'gris'];
   const fco = document.getElementById('f-colors');
   fco.innerHTML = COL.map((c) => `<button type="button" class="sw" data-color="${c}" aria-label="${C[c][0]}" title="${C[c][0]}" aria-pressed="false"><i style="background:${C[c][1]}"></i></button>`).join('');
   fco.addEventListener('click', (e) => { const b = e.target.closest('[data-color]'); if (!b) return; const c = b.dataset.color; state.colors.has(c) ? state.colors.delete(c) : state.colors.add(c); draw(); });
